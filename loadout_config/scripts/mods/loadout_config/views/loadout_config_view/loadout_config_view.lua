@@ -511,13 +511,13 @@ function LoadoutConfigView:unlocked_present_perks(perk_view, ingredients, extern
 	perk_view._ingredients = ingredients
 	perk_view._external_left_click_callback = external_left_click_callback
 
-  mod:echo("Fetching backend perk data...")
+  --mod:echo("Fetching backend perk data...")
   perk_view._backend_promise = Managers.data_service.crafting:get_item_crafting_metadata(item_masterid)
 
   return perk_view._backend_promise:next(function (data)
-    mod:echo("Perk data fetched.")
+    --mod:echo("Perk data fetched.")
     perk_view._perks_by_rank = data.perks
-    mod:echo(dump(data.perks))
+    --mod:echo(dump(data.perks))
 
     
     local max_unlocked = RankSettings.max_perk_rank
