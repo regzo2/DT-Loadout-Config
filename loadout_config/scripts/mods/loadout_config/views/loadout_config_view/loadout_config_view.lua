@@ -16,10 +16,22 @@ local MasteryUtils = require("scripts/utilities/mastery")
 local Promise = require("scripts/foundation/utilities/promise")
 local RankSettings = require("scripts/settings/item/rank_settings")
 
+mod.on_settings_changed = function()
+  mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
+  mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
+  mod._is_debug_mode = mod:get("debug_mode")
+end
+
+mod.on_settings_changed()
+
 local function sort_offer_by_display_name(a, b)
   local item_a = MasterItems.get_item(a.description.lootChoices[1])
   local item_b = MasterItems.get_item(b.description.lootChoices[1])
   return Localize(item_a.display_name) < Localize(item_b.display_name)
+end
+
+local function sort_by_parent_pattern_name(a, b)
+  return tostring(a.parent_pattern) < tostring(b.parent_pattern)
 end
 
 local _gadgets_list = table.filter(MasterItems.get_cached(), function(item)
@@ -371,7 +383,7 @@ function LoadoutConfigView:_on_trait_selected(widget, config)
     return
   end
 
-  if not self._enforce_override_restrictions or #selected_traits < max_traits then
+  if not mod._enforce_override_restrictions or #selected_traits < max_traits then
     table.insert(selected_traits, {
       rarity = config.trait_item.rarity,
       id = config.trait_item.name,
@@ -499,25 +511,12 @@ function LoadoutConfigView:_on_perk_selected(widget, config)
     return
   end
 
-  if not self._enforce_override_restrictions or #selected_perks < max_perks then
+  if not mod._enforce_override_restrictions or #selected_perks < max_perks then
     table.insert(selected_perks, {
       rarity = perk_item.rarity,
       id = perk_item.name
     })
   end
-end
-
-function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
 end
 
 function LoadoutConfigView:unlocked_present_perks(perk_view, ingredients, external_left_click_callback)
@@ -535,13 +534,10 @@ function LoadoutConfigView:unlocked_present_perks(perk_view, ingredients, extern
 	perk_view._ingredients = ingredients
 	perk_view._external_left_click_callback = external_left_click_callback
 
-  --mod:echo("Fetching backend perk data...")
   perk_view._backend_promise = Managers.data_service.crafting:get_item_crafting_metadata(item_masterid)
 
   return perk_view._backend_promise:next(function (data)
-    --mod:echo("Perk data fetched.")
     perk_view._perks_by_rank = data.perks
-    --mod:echo(dump(data.perks))
 
     
     local max_unlocked = RankSettings.max_perk_rank
@@ -638,14 +634,11 @@ function LoadoutConfigView:_update_base_stats()
 
     i = i + 1
   end
-
 end
 
 function LoadoutConfigView:update(dt, t, input_service)
 
   LoadoutConfigView.super.update(self, dt, t, input_service)
-
-  self._enforce_override_restrictions = mod:get("enforce_override_restrictions")
 
   local should_update_perks = self:_update_selected_item()
   if should_update_perks then
@@ -657,8 +650,7 @@ function LoadoutConfigView:update(dt, t, input_service)
   self:_update_selected_slot()
   self:_update_active_selections()
 
-  local is_debug_mode = mod:get("debug_mode")
-  if is_debug_mode then
+  if mod._is_debug_mode then
     self:_update_debug_menu()
   end
 end
