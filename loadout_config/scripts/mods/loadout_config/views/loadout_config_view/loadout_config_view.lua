@@ -165,13 +165,36 @@ function LoadoutConfigView:_populate_weapon_cards()
   local widgets = self._widgets
   local offers = self._offers
 
-  table.sort(offers, sort_offer_by_display_name)
+  local items = {}
+  local patterns = UISettings.weapon_patterns
+  for _, pattern in pairs(patterns) do
+    for _, mark in pairs(pattern.marks) do
+      local item = MasterItems.get_item(mark.item)
+      table.insert(items, item)
+    end
+  end
 
-  for i, offer in ipairs(offers) do
-    local offer_description = offer.description
-    local loot_choices = offer_description.lootChoices
-    local item_id = loot_choices[1]
-    local item = MasterItems.get_item(item_id)
+  table.sort(items, sort_by_parent_pattern_name)
+
+  local first_time = true
+
+  for i, item in pairs(items) do
+    if not item.parent_pattern or item.display_name == "" then
+      goto continue
+    end
+
+    if mod._enforce_class_restrictions then
+      local archetype = profile.archetype
+      local archetype_name = archetype.name
+      local breed_name = archetype.breed
+      local breed_valid = not item.breeds or table.contains(item.breeds, breed_name)
+      local archetype_valid = not item.archetypes or table.contains(item.archetypes, archetype_name)
+
+      if not archetype_valid or not breed_valid then
+        goto continue
+      end
+    end
+
     local item_type = item.item_type
     local hud_icon = item.hud_icon
 
@@ -213,6 +236,7 @@ function LoadoutConfigView:_populate_weapon_cards()
     table.insert(offer_widget_names, widget_id)
     table.insert(slot_offer_widgets, widget)
     table.insert(widgets, widget)
+    ::continue::
   end
 
   self._offer_widget_names = offer_widget_names
