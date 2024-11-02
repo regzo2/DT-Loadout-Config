@@ -20,6 +20,11 @@ return {
 				default_value = true
 			},
 			{
+				setting_id = "enforce_class_restrictions",
+				type = "checkbox",
+				default_value = true
+			},
+			{
 				setting_id = "default_base_stat_value",
 				type = "numeric",
 				range = { 1, 100 },

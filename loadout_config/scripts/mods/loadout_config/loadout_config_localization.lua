@@ -23,6 +23,12 @@ return {
 		en = "Prevents adding more Perks, Blessings, or Traits to an item than would regularly be allowed.",
 		["zh-cn"] = "禁止向物品添加超出常规限制的专长、祝福或属性。",
 	},
+	enforce_class_restrictions = {
+		en = "Enforce Class Restrictions",
+	},
+	enforce_class_restrictions_description = {
+		en = "Prevents classes from having access to weapons in the weapons list that they are not allowed to use.",
+	},
 	loadouts_header = {
 		en = "Loadouts",
 		["zh-cn"] = "配装",
