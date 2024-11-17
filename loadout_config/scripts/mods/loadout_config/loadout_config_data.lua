@@ -47,9 +47,19 @@ return {
 				type = "dropdown",
 				default_value = "2",
 				options = {
-					{ text = "loadout_menu_classic", value = "1" },
-					{ text = "loadout_menu_remixed", value = "2" },
+					{ text = "loadout_menu_remixed", value = "2", show_widgets = { 1 }},
+					{ text = "loadout_menu_classic", value = "1", show_widgets = { }},
 				},
+				sub_widgets = {
+					{
+						setting_id = "remixed_stat_button_size",
+						type = "numeric",
+						range = { 5, 10 },
+						default_value = 6,
+						decimals_number = 0,
+						step_size_value = 1
+					},
+				}
 			},
 			{
 				setting_id = "debug_mode",
