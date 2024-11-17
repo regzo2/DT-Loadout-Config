@@ -27,7 +27,8 @@ return {
 		en = "Enforce Class Restrictions",
 	},
 	enforce_class_restrictions_description = {
-		en = "Prevents classes from having access to weapons in the weapons list that they are not allowed to use. \n\n[NOTE] Ogryn weapons will still be disabled on human classes to prevent crashes.",
+		en = "Prevents classes from having access to weapons in the weapons list that they are not allowed to use." ..
+			 "\n\n[NOTE] \nOgryn weapons will still be disabled on human classes to prevent crashes.",
 	},
 	loadouts_header = {
 		en = "Loadouts",
@@ -39,32 +40,47 @@ return {
 	},
 
 	weapon_naming_convention = {
-		en = "Weapon Naming Style"
+		en = "Weapon Naming Style",
+	},
+	weapon_naming_convention_description = {
+		en = "Configures naming style for the selected weapon." .. 
+			 "\n\n[Simple] \nShows weapon pattern and mark only." .. 
+			 "\n\n[Modern] \nShows weapon pattern, family, and mark (Unlocked and Loaded)." .. 
+			 "\n\n[Classic] \nShows weapon pattern, family, and mark (pre-Unlocked and Loaded).",
 	},
 	weapon_name_classic = {
-		en = "Classic"
+		en = "Classic",
 	},
 	weapon_name_modern = {
-		en = "Modern"
+		en = "Modern",
 	},
 	weapon_name_simple = {
-		en = "Simple"
+		en = "Simple",
 	},
 
 	loadout_menu_layout = {
-		en = "Menu Layout"
+		en = "Menu Layout",
+	},
+	loadout_menu_layout_description = {
+		en = "Configures layout for the config menu." .. 
+			 "\n\n[Remixed] \nOrganizes weapon selection cards by mark and moves selected weapon and stats to the side." .. 
+			 "\n\n[Classic] \nOriginal layout; Weapon selection cards are tiled and selected weapon and stats are below the selection cards.",
 	},
 	loadout_menu_remixed = {
-		en = "Remixed"
+		en = "Remixed",
 	},
 	loadout_menu_classic = {
-		en = "Classic"
+		en = "Classic",
+	},
+
+	remixed_stat_button_size = {
+		en = "Weapon Stat Adjuster Size",
 	},
 
 	error_no_preset_with_modded_loadout = {
-		en = "Cannot create base game presets with modded loadouts\nUse loadout system provided by Loadout Config"
+		en = "Cannot create base game presets with modded loadouts\nUse loadout system provided by Loadout Config",
 	},
 	error_only_open_as_host = {
-		en = "Loadout Config can only be opened in the Psykhanium or during a SoloPlay-enabled game."
+		en = "Loadout Config can only be opened in the Psykhanium or during a SoloPlay-enabled game.",
 	}
 }
