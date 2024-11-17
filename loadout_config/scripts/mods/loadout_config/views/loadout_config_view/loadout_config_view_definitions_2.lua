@@ -163,6 +163,8 @@ local scenegraph_definition = {
     }
 }
 
+local stat_button_size = mod:get("remixed_stat_button_size")
+
 local ItemSlotSettings = require("scripts/settings/item/item_slot_settings")
 local slot_buttons_settings = {
     ItemSlotSettings.slot_primary,
@@ -211,9 +213,9 @@ local stat_slider_passes = {
             vertical_alignment = "center",
             horizontal_alignment = "left",
             triangle_corners = {
-                { -5, 0 },
-                { 0, 5 },
-                { 0, -5 }
+                { -stat_button_size, 0 },
+                { 0, stat_button_size },
+                { 0, -stat_button_size }
             },
             color = Color.white(180, true),
             offset = { -5, 5, 2 }
@@ -269,9 +271,9 @@ local stat_slider_passes = {
             vertical_alignment = "center",
             horizontal_alignment = "right",
             triangle_corners = {
-                { 5, 0 },
-                { 0, 5 },
-                { 0, -5 },
+                { stat_button_size+1, 0 },
+                { 0, stat_button_size+1 },
+                { 0, -stat_button_size-1 },
             },
             color = Color.white(255, true),
             offset = { 105, 5, 2 }
