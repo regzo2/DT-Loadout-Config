@@ -33,6 +33,25 @@ return {
 				step_size_value = 1
 			},
 			{
+				setting_id = "weapon_naming_convention",
+				type = "dropdown",
+				default_value = "modern",
+				options = {
+					{ text = "weapon_name_simple", value = "simple" },
+					{ text = "weapon_name_modern", value = "modern" },
+					{ text = "weapon_name_classic", value = "classic" },
+				},
+			},
+			{
+				setting_id = "loadout_menu_layout",
+				type = "dropdown",
+				default_value = "2",
+				options = {
+					{ text = "loadout_menu_classic", value = "1" },
+					{ text = "loadout_menu_remixed", value = "2" },
+				},
+			},
+			{
 				setting_id = "debug_mode",
 				type = "checkbox",
 				default_value = false
