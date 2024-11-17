@@ -27,7 +27,7 @@ return {
 		en = "Enforce Class Restrictions",
 	},
 	enforce_class_restrictions_description = {
-		en = "Prevents classes from having access to weapons in the weapons list that they are not allowed to use.",
+		en = "Prevents classes from having access to weapons in the weapons list that they are not allowed to use. \n\n[NOTE] Ogryn weapons will still be disabled on human classes to prevent crashes.",
 	},
 	loadouts_header = {
 		en = "Loadouts",
@@ -36,6 +36,29 @@ return {
 	default_base_stat_value = {
 		en = "Default Weapon Modifier Value",
 		["zh-cn"] = "默认武器修正值",
+	},
+
+	weapon_naming_convention = {
+		en = "Weapon Naming Style"
+	},
+	weapon_name_classic = {
+		en = "Classic"
+	},
+	weapon_name_modern = {
+		en = "Modern"
+	},
+	weapon_name_simple = {
+		en = "Simple"
+	},
+
+	loadout_menu_layout = {
+		en = "Menu Layout"
+	},
+	loadout_menu_remixed = {
+		en = "Remixed"
+	},
+	loadout_menu_classic = {
+		en = "Classic"
 	},
 
 	error_no_preset_with_modded_loadout = {
