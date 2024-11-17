@@ -1,5 +1,15 @@
 local mod = get_mod("loadout_config")
 
+mod.on_setting_changed = function()
+  mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
+  mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
+  mod._is_debug_mode = mod:get("debug_mode")
+  mod._weapon_naming_convention = mod:get("weapon_naming_convention")
+  mod._loadout_layout_config = mod:get("loadout_menu_layout")
+end
+
+mod.on_setting_changed()
+
 local loadout_view_name = "loadout_config"
 local loadout_config_view_path = "loadout_config/scripts/mods/loadout_config/views/loadout_config_view/loadout_config_view"
 

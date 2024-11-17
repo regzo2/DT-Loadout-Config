@@ -12,17 +12,10 @@ local ViewElementPerksItem = require("scripts/ui/view_elements/view_element_perk
 local ViewElementTraitInventory = require("scripts/ui/view_elements/view_element_trait_inventory/view_element_trait_inventory")
 local ButtonPassTemplates = require("scripts/ui/pass_templates/button_pass_templates")
 local LoadoutList = mod:io_dofile("loadout_config/scripts/mods/loadout_config/view_elements/loadout_list/loadout_list")
+local WeaponCards = mod:io_dofile("loadout_config/scripts/mods/loadout_config/view_elements/loadout_weapon_cards/loadout_weapon_cards")
 local MasteryUtils = require("scripts/utilities/mastery")
 local Promise = require("scripts/foundation/utilities/promise")
 local RankSettings = require("scripts/settings/item/rank_settings")
-
-mod.on_settings_changed = function()
-  mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
-  mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
-  mod._is_debug_mode = mod:get("debug_mode")
-end
-
-mod.on_settings_changed()
 
 local function sort_offer_by_display_name(a, b)
   local item_a = MasterItems.get_item(a.description.lootChoices[1])
@@ -59,7 +52,7 @@ local function _sin_time_since_launch(optional_speed)
   return math.sin(time_since_launch)
 end
 
-local Definitions = mod:io_dofile("loadout_config/scripts/mods/loadout_config/views/loadout_config_view/loadout_config_view_definitions")
+local Definitions = mod:io_dofile("loadout_config/scripts/mods/loadout_config/views/loadout_config_view/loadout_config_view_definitions_" .. mod._loadout_layout_config)
 local slot_buttons_settings = Definitions.slot_buttons_settings
 
 local LoadoutConfigView = class("LoadoutConfigView", "BaseView")
@@ -99,7 +92,32 @@ function LoadoutConfigView:player_profile()
 end
 
 function LoadoutConfigView:_setup_elements()
-  self:_populate_weapon_cards()
+  --self:_populate_weapon_cards()
+
+  local player = self:_player()
+  local profile = player:profile()
+  local loadout = profile.loadout
+  local selected_card = self._selected_card
+
+  selected_card.content.cards = {
+    loadout.slot_primary and loadout.slot_primary.__master_item,
+    loadout.slot_secondary and loadout.slot_secondary.__master_item,
+    loadout.slot_attachment_1 and loadout.slot_attachment_1.__master_item or _get_random_gadget(),
+    loadout.slot_attachment_2 and loadout.slot_attachment_2.__master_item or _get_random_gadget(),
+    loadout.slot_attachment_3 and loadout.slot_attachment_3.__master_item or _get_random_gadget(),
+  }
+
+  local widgets_by_name = self._widgets_by_name
+  for i = 1, #slot_buttons_settings do
+    local widget_name = string.format("slot_button_%s", i)
+    local widget = widgets_by_name[widget_name]
+    local slot = i == 1 and "WEAPON_MELEE" or i == 2 and "WEAPON_RANGED" or "GADGET"
+    widget.content.hotspot.pressed_callback = callback(self, "_on_slot_button_pressed", slot, i)
+  end
+
+  self._loadout_cards = self:_add_element(WeaponCards, "loadout_cards", 10, nil, "loadout_cards_root")
+  self:_update_element_position("loadout_cards_root", self._loadout_cards)
+  self._loadout_cards:present_items("WEAPON_MELEE", self, "_on_offer_button_selected")
 
   local loadout_list_context = {
     max_loadouts = 20,
@@ -161,13 +179,6 @@ function LoadoutConfigView:_populate_weapon_cards()
   }
 
   self._profile = profile
-
-  local widgets_by_name = self._widgets_by_name
-  for i = 1, #slot_buttons_settings do
-    local widget_name = string.format("slot_button_%s", i)
-    local widget = widgets_by_name[widget_name]
-    widget.content.hotspot.pressed_callback = callback(self, "_on_slot_button_pressed", i)
-  end
 
   local slot_primary_offer_widgets = {}
   local slot_secondary_offer_widgets = {}
@@ -274,12 +285,8 @@ function LoadoutConfigView:_on_reset_button_pressed()
   self:_apply_custom_loadout()
 end
 
-function LoadoutConfigView:_on_offer_button_selected(offer_widget)
-  local item_id = offer_widget.content.item_id
-  local selected_item = self._selected_item
-
-  if selected_item.name ~= item_id then
-    local item = offer_widget.content.item
+function LoadoutConfigView:_on_offer_button_selected(item)
+  if item then
     local weapon_template = WeaponTemplate.weapon_template_from_item(item)
     local template_base_stats = weapon_template and weapon_template.base_stats
     local base_stats = template_base_stats and {}
@@ -304,7 +311,8 @@ function LoadoutConfigView:_on_offer_button_selected(offer_widget)
   end
 end
 
-function LoadoutConfigView:_on_slot_button_pressed(index)
+function LoadoutConfigView:_on_slot_button_pressed(slot, index)
+  self._loadout_cards:present_items(slot, self, "_on_offer_button_selected")
   self._selected_card.content.index = index
 end
 
@@ -478,6 +486,11 @@ function LoadoutConfigView:_update_selected_item()
 
     self:_load_selected_item_icon()
     self:_update_visible_offers()
+
+    local slot = current_card_item.item_type
+    if self._loadout_cards then
+      self._loadout_cards:present_items(slot, self, "_on_offer_button_selected")
+    end
 
     return true
   end
