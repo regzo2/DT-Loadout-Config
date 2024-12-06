@@ -22,12 +22,6 @@ function ViewElementWeaponCards:init(parent, draw_layer, scale, context)
   self:present_grid_layout({}, Blueprints)
 end
 
-function ViewElementWeaponCards:update(dt, t, input_service)
-  ViewElementWeaponCards.super.update(self, dt, t, input_service)
-
-  --self:_update_active_selection()
-end
-
 local current_selected_slot = nil
 
 ViewElementWeaponCards.present_items = function(self, slot, instance, callback_name)

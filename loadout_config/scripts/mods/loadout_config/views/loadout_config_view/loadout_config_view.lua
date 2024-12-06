@@ -87,13 +87,7 @@ function LoadoutConfigView:event_player_profile_updated(peer_id, local_player_id
   self._profile = table.clone_instance(new_profile)
 end
 
-function LoadoutConfigView:player_profile()
-  return self._profile
-end
-
 function LoadoutConfigView:_setup_elements()
-  --self:_populate_weapon_cards()
-
   local player = self:_player()
   local profile = player:profile()
   local loadout = profile.loadout
@@ -148,121 +142,16 @@ function LoadoutConfigView:on_enter()
 
   self:_setup_input_legend()
 
-  self._render_settings.alpha_multiplier = 1 -- hack fix to prevent nil, literally wtf
-
   self._saved_loadouts = mod:get("saved_loadouts") or {}
   self._selected_card = self._widgets_by_name.selected_card
   self._selected_card.content.index = mod.last_selected_index or 1
 
-  local store_service = Managers.data_service.store
-  store_service:get_credits_goods_store():next(function(data)
-    self._offers = data.offers
-    self:_setup_elements()
-  end)
+  self:_setup_elements()
+  
+  self:_start_animation("on_enter", self._widgets, self)
 
   self._is_open = true
   Imgui.open_imgui()
-end
-
-function LoadoutConfigView:_populate_weapon_cards()
-  local player = self:_player()
-  local profile = player:profile()
-  local loadout = profile.loadout
-  local selected_card = self._selected_card
-
-  selected_card.content.cards = {
-    loadout.slot_primary and loadout.slot_primary.__master_item,
-    loadout.slot_secondary and loadout.slot_secondary.__master_item,
-    loadout.slot_attachment_1 and loadout.slot_attachment_1.__master_item or _get_random_gadget(),
-    loadout.slot_attachment_2 and loadout.slot_attachment_2.__master_item or _get_random_gadget(),
-    loadout.slot_attachment_3 and loadout.slot_attachment_3.__master_item or _get_random_gadget(),
-  }
-
-  self._profile = profile
-
-  local slot_primary_offer_widgets = {}
-  local slot_secondary_offer_widgets = {}
-  local slot_attachment_offer_widgets = {}
-
-  local offer_widget_names = {}
-  local widgets = self._widgets
-  local offers = self._offers
-
-  local items = {}
-  local patterns = UISettings.weapon_patterns
-  for _, pattern in pairs(patterns) do
-    for _, mark in pairs(pattern.marks) do
-      local item = MasterItems.get_item(mark.item)
-      table.insert(items, item)
-    end
-  end
-
-  table.sort(items, sort_by_parent_pattern_name)
-
-  local first_time = true
-
-  for i, item in pairs(items) do
-    if not item.parent_pattern or item.display_name == "" then
-      goto continue
-    end
-
-    if mod._enforce_class_restrictions then
-      local archetype = profile.archetype
-      local archetype_name = archetype.name
-      local breed_name = archetype.breed
-      local breed_valid = not item.breeds or table.contains(item.breeds, breed_name)
-      local archetype_valid = not item.archetypes or table.contains(item.archetypes, archetype_name)
-
-      if not archetype_valid or not breed_valid then
-        goto continue
-      end
-    end
-
-    local item_type = item.item_type
-    local hud_icon = item.hud_icon
-
-    local slot_offer_widgets
-    if item_type == ITEM_TYPES.WEAPON_MELEE then
-      slot_offer_widgets = slot_primary_offer_widgets
-    elseif item_type == ITEM_TYPES.WEAPON_RANGED then
-      slot_offer_widgets = slot_secondary_offer_widgets
-    elseif item_type == ITEM_TYPES.GADGET then
-      slot_offer_widgets = slot_attachment_offer_widgets
-    end
-
-    local widget_definition = UIWidget.create_definition(ButtonPassTemplates.terminal_button_icon, "offer_button_root", {
-      item = item,
-      item_id = item_id,
-      item_type = item_type,
-      icon = hud_icon or "content/ui/materials/icons/weapons/hud/combat_blade_01",
-      hotspot = {
-        on_pressed_sound = UISoundEvents.default_click
-      }
-    }, { 128, 48 }, {
-      icon = {
-        size = { 128, 48 }
-      }
-    })
-
-    local index = #slot_offer_widgets + 1
-    local widget_id = string.format("offer_button_%s_%s", item_type, index)
-    local widget = self:_create_widget(widget_id, widget_definition)
-    local row = (index - 1) / 5
-
-    widget.content.hotspot.pressed_callback = callback(self, "_on_offer_button_selected", widget)
-    widget.offset = {
-      (index - 1) % 5 * 140,
-      math.floor(row) * -60,
-      1
-    }
-
-    table.insert(offer_widget_names, widget_id)
-    table.insert(slot_offer_widgets, widget)
-    table.insert(widgets, widget)
-    ::continue::
-  end
-
-  self._offer_widget_names = offer_widget_names
 end
 
 function LoadoutConfigView:_on_loadout_button_pressed(loadout_widget)

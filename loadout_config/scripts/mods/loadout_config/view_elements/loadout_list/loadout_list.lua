@@ -67,8 +67,8 @@ function ViewElementLoadoutList:clear_selection()
 end
 
 function ViewElementLoadoutList:archetype_name()
-  local parent = self._parent
-  local profile = parent:player_profile()
+  local player = Managers.player:local_player(1)
+  local profile = player:profile()
   local archetype = profile.archetype
   local archetype_name = archetype.name
 
@@ -93,8 +93,8 @@ function ViewElementLoadoutList:_init_loadouts()
   self._saved_loadouts = saved_loadouts
   self._loadout_widgets = {}
 
-  local parent = self._parent
-  local profile = parent:player_profile()
+  local player = Managers.player:local_player(1)
+  local profile = player:profile()
   local archetype = profile.archetype
   local archetype_name = archetype.name
   local archetype_loadouts = saved_loadouts[archetype_name] or {}
@@ -162,7 +162,8 @@ function ViewElementLoadoutList:_on_create_button_pressed()
     item_data = loadout_item_data
   }
 
-  local profile = parent:player_profile()
+  local player = Managers.player:local_player(1)
+  local profile = player:profile()
   local archetype = profile.archetype
   local archetype_name = archetype.name
   local archetype_loadouts = self._saved_loadouts[archetype_name]
@@ -187,8 +188,8 @@ function ViewElementLoadoutList:_on_delete_button_pressed()
 
   self:remove_widget(selected_widget)
 
-  local parent = self._parent
-  local profile = parent:player_profile()
+  local player = Managers.player:local_player(1)
+  local profile = player:profile()
   local archetype = profile.archetype
   local archetype_name = archetype.name
   local archetype_loadouts = saved_loadouts[archetype_name]
