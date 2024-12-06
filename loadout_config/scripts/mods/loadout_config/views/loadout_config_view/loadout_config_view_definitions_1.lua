@@ -692,9 +692,48 @@ local legend_inputs = {
     },
 }
 
+local animations = {
+	on_enter = {
+		{
+			end_time = 0.1,
+			name = "fade_in",
+			start_time = 0,
+			init = function (parent, ui_scenegraph, scenegraph_definition, widgets, parent)
+				parent._render_settings.alpha_multiplier = 0
+
+				for i = 1, #widgets do
+					local widget = widgets[i]
+
+					widget.alpha_multiplier = 0
+				end
+			end,
+		},
+		{
+			end_time = 0.2,
+			name = "move",
+			start_time = 0,
+			init = function (parent, ui_scenegraph, scenegraph_definition, widgets, parent)
+				return
+			end,
+			update = function (parent, ui_scenegraph, scenegraph_definition, widgets, progress, parent)
+				local anim_progress = math.easeOutCubic(progress)
+
+				for i = 1, #widgets do
+					local widget = widgets[i]
+
+					widget.alpha_multiplier = anim_progress
+				end
+
+				parent._render_settings.alpha_multiplier = anim_progress
+			end,
+		},
+	},
+}
+
 return {
     slot_buttons_settings = slot_buttons_settings,
     scenegraph_definition = scenegraph_definition,
     widget_definitions = widget_definitions,
-    legend_inputs = legend_inputs
+    legend_inputs = legend_inputs,
+    animations = animations,
 }
