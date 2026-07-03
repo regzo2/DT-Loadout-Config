@@ -74,7 +74,7 @@ local widget_definitions = {
     }
   }, "header"),
   create_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button_small, "create_button", {
-    text = "Create",
+    text = mod:localize("create_button_text"),
     hotspot = {
       on_pressed_sound = UISoundEvents.default_click
     }
@@ -85,7 +85,7 @@ local widget_definitions = {
     }
   }),
   reset_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button_small, "reset_button", {
-    text = "Reset",
+    text = mod:localize("reset_button_text"),
     hotspot = {
       on_pressed_sound = UISoundEvents.default_click
     }
@@ -96,7 +96,7 @@ local widget_definitions = {
     }
   }),
   delete_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button_small, "delete_button", {
-    text = "Delete",
+    text = mod:localize("delete_button_text"),
     hotspot = {
       on_pressed_sound = UISoundEvents.default_click
     }
