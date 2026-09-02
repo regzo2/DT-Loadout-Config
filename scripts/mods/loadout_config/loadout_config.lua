@@ -7,11 +7,45 @@ mod.on_setting_changed = function()
   mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
   mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
   mod._is_debug_mode = mod:get("debug_mode")
+  mod._allow_clients_loadout = mod:get("allow_clients_loadout")
   mod._weapon_naming_convention = mod:get("weapon_naming_convention")
   mod._loadout_layout_config = mod:get("loadout_menu_layout")
 end
 
 mod.on_setting_changed()
+
+local _check_and_hook_realms = function()
+  local realms = get_mod("Realms")
+  if not realms then return end
+
+  realms.network_register(mod, "rpc_loadout_config_sync_profile", function(sender_peer_id, profile)
+    local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+
+    if synchronizer_host and profile then
+      mod:echo("[Loadout Config]: Loadout change requested by peer_id: " .. tostring(sender_peer_id))
+      local player = Managers.player:player(sender_peer_id, 1)
+      local local_player_id = player and player:local_player_id() or 1
+
+      synchronizer_host:override_singleplay_profile(sender_peer_id, local_player_id, profile)
+    end
+  end)
+
+  realms.network_register(mod, "rpc_loadout_config_reset_profile", function(sender_peer_id)
+    local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+
+    if synchronizer_host then
+      mod:echo("[Loadout Config]: Loadout reset requested by peer_id: " .. tostring(sender_peer_id))
+      local player = Managers.player:player(sender_peer_id, 1)
+      local local_player_id = player and player:local_player_id() or 1
+
+      synchronizer_host:profile_changed(sender_peer_id, local_player_id)
+    end
+  end)
+end
+
+mod.on_all_mods_loaded = function()
+  _check_and_hook_realms()
+end
 
 local loadout_view_name = "loadout_config"
 local loadout_config_view_path = "loadout_config/scripts/mods/loadout_config/views/loadout_config_view/loadout_config_view"
@@ -71,7 +105,9 @@ function mod.open_view()
       and not ui_manager:chat_using_input()
       and not ui_manager:view_instance(loadout_view_name)
   then
-    if not (is_player_hosted_session() or is_singleplayer_session()) then
+    local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+
+    if not (synchronizer_host or is_player_hosted_session() or is_singleplayer_session()) then
       mod:notify(mod:localize("error_only_open_as_host"))
 
       return
@@ -85,6 +121,26 @@ end
 
 mod:command("loadout_config", "", mod.open_view)
 mod:command("lc", mod:localize("mod_name"), mod.open_view)
+mod:command("lc_test_realms_profile", "Simulate receiving a custom profile RPC from a client", function()
+  local player = Managers.player:local_player_safe(1)
+  if not player then 
+    mod:echo("[Test] Must be in a game session to test.")
+    return 
+  end
+
+  local local_peer_id = player:peer_id()
+  
+  local mock_profile = player:profile()
+
+  mod:echo("[Test] Simulating Client sending RPC to Host...")
+
+  local realms = get_mod("Realms")
+  if realms and realms.network_is_available() then
+    realms.network_send(mod, "rpc_loadout_config_sync_profile", "local", mock_profile)
+  else
+    mod:echo("[Test] Realms network is not available right now.")
+  end
+end)
 
 mod:hook(CLASS.PackageSynchronizerHost, "_item_instance_altered", function(func, ...)
   return true

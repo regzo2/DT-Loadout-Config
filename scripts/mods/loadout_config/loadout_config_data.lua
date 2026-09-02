@@ -21,6 +21,7 @@ return {
 			},
 			{
 				setting_id = "enforce_class_restrictions",
+				setting_id = "allow_clients_loadout",
 				type = "checkbox",
 				default_value = true
 			},

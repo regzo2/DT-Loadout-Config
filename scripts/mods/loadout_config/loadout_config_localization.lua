@@ -42,6 +42,16 @@ return {
 		ru = "Запрещает классам доступ к оружию из списка, которое они обычно не могут использовать." ..
 			 "\n\n[ПРИМЕЧАНИЕ] \nОружие огринов всё равно будет отключено для человеческих классов во избежание сбоев.",
 	},
+	allow_clients_loadout = {
+		en = "Allow Client Loadouts",
+		["zh-cn"] = "允许客户端配装",
+		ru = "Разрешить клиентские снаряжения",
+	},
+	allow_clients_loadout_description = {
+		en = "Allows network-connected players to change their loadouts in a player-hosted session.",
+		["zh-cn"] = "允许玩家在由其他玩家主持的房间中更改配装。",
+		ru = "Позволяет игрокам менять комплект в сессии другого игрока.",
+	},
 	loadouts_header = {
 		en = "Loadouts",
 		["zh-cn"] = "配装",

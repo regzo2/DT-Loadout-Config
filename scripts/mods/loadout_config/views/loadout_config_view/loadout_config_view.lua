@@ -16,6 +16,8 @@ local WeaponCards = mod:io_dofile("loadout_config/scripts/mods/loadout_config/vi
 local MasteryUtils = require("scripts/utilities/mastery")
 local Promise = require("scripts/foundation/utilities/promise")
 local RankSettings = require("scripts/settings/item/rank_settings")
+local MatchmakingConstants = require("scripts/settings/network/matchmaking_constants")
+local HOST_TYPES = MatchmakingConstants.HOST_TYPES
 
 local function sort_offer_by_display_name(a, b)
   local item_a = MasterItems.get_item(a.description.lootChoices[1])
@@ -723,27 +725,55 @@ function LoadoutConfigView:_pack_loadout_to_profile()
   return loadout_item_data
 end
 
+local function is_realms_session()
+  local multiplayer_session = Managers.multiplayer_session
+  return multiplayer_session and multiplayer_session:host_type() == HOST_TYPES.player or false
+end
+
+local function is_realms_host()
+  local connection = Managers.connection
+  return is_realms_session() and connection and connection:is_host() or false
+end
+
+local function is_realms_client()
+  local connection = Managers.connection
+  return is_realms_session() and connection and connection:is_client() or false
+end
+
 function LoadoutConfigView:_apply_custom_loadout()
   local player = Managers.player:local_player_safe(1)
-  local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+  if not player then return end
 
-  if synchronizer_host then
+  local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+  local local_player_id = player:local_player_id()
+  local peer_id = player:peer_id()
 
     if self._reset_loadout then
-      local local_player_id = 1
-      local local_player = Managers.player:local_player_safe(local_player_id)
-      local peer_id = local_player:peer_id()
+    if synchronizer_host then
       synchronizer_host:profile_changed(peer_id, local_player_id)
+    elseif is_realms_client() then
+      local realms = get_mod("Realms")
+      if realms and realms.network_is_available() then
+        realms.network_send(mod, "rpc_loadout_config_reset_loadout", "host")
+      end
+    end
 
       self._reset_loadout = nil
-
       return
     end
 
     self:_pack_loadout_to_profile()
     local profile = self._profile
 
-    synchronizer_host:override_singleplay_profile(Network.peer_id(), player:local_player_id(), profile)
+  if synchronizer_host then
+    synchronizer_host:override_singleplay_profile(peer_id, local_player_id, profile)
+
+  elseif is_realms_client() then
+    local realms = get_mod("Realms")
+
+    if realms and realms.network_is_available() then
+      realms.network_send(mod, "rpc_loadout_config_sync_profile", "host", profile)
+    end
   end
 end
 
