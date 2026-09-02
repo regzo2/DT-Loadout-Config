@@ -45,6 +45,14 @@ mod:register_view({
   }
 })
 
+local function is_custom_host_session()
+	local multiplayer_session = Managers.multiplayer_session
+
+	return multiplayer_session
+		     and multiplayer_session:host_type() == HOST_TYPES.player
+		     or false
+end
+
 function mod.open_view()
   local ui_manager = Managers.ui
 
@@ -52,7 +60,7 @@ function mod.open_view()
       and not ui_manager:chat_using_input()
       and not ui_manager:view_instance(loadout_view_name)
   then
-    if not Managers.profile_synchronization:synchronizer_host() then
+    if not is_custom_host_session() then
       mod:notify(mod:localize("error_only_open_as_host"))
 
       return
