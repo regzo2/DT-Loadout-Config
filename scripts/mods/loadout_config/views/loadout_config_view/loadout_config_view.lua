@@ -772,16 +772,6 @@ local function is_realms_session()
   return multiplayer_session and multiplayer_session:host_type() == HOST_TYPES.player or false
 end
 
-local function is_realms_host()
-  local connection = Managers.connection
-  return is_realms_session() and connection and connection:is_host() or false
-end
-
-local function is_realms_client()
-  local connection = Managers.connection
-  return is_realms_session() and connection and connection:is_client() or false
-end
-
 function LoadoutConfigView:_apply_custom_loadout()
   local player = Managers.player:local_player_safe(1)
   if not player then return end
@@ -793,10 +783,10 @@ function LoadoutConfigView:_apply_custom_loadout()
   if self._reset_loadout then
     if synchronizer_host then
       synchronizer_host:profile_changed(peer_id, local_player_id)
-    elseif is_realms_client() then
+    elseif is_realms_session() then
       local realms = get_mod("Realms")
       if realms and realms.network_is_available() then
-        realms.network_send(mod, "rpc_loadout_config_reset_loadout", "host")
+        realms.network_send(mod, "rpc_loadout_config_reset_profile", "host", local_player_id)
       end
     end
 
@@ -809,12 +799,12 @@ function LoadoutConfigView:_apply_custom_loadout()
 
   if synchronizer_host then
     synchronizer_host:override_singleplay_profile(peer_id, local_player_id, profile)
-
-  elseif is_realms_client() then
+  elseif is_realms_session() then
     local realms = get_mod("Realms")
+    mod:echo("Sending loadout config to host for synchronization...")
 
     if realms and realms.network_is_available() then
-      realms.network_send(mod, "rpc_loadout_config_sync_profile", "host", profile)
+      realms.network_send(mod, "rpc_loadout_config_sync_profile", "host", table.clone(profile.loadout_item_data))
     end
   end
 end

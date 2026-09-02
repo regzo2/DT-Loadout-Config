@@ -19,29 +19,50 @@ local _check_and_hook_realms = function()
   local realms = get_mod("Realms")
   if not realms then return end
 
-  realms.network_register(mod, "rpc_loadout_config_sync_profile", function(sender_peer_id, profile)
+  local sync_registered, sync_err = realms.network_register(mod, "rpc_loadout_config_sync_profile", function(sender_peer_id, loadout_item_data)
+    if not mod._allow_clients_loadout then return end
+
+    mod:echo("[Loadout Config]: Syncing profile from Peer: " .. tostring(sender_peer_id))
+    
     local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+    if not synchronizer_host then return end
 
-    if synchronizer_host and profile then
-      mod:echo("[Loadout Config]: Loadout change requested by peer_id: " .. tostring(sender_peer_id))
-      local player = Managers.player:player(sender_peer_id, 1)
-      local local_player_id = player and player:local_player_id() or 1
+    local sender_player = Managers.player and Managers.player:player(sender_peer_id, 1)
+    if not sender_player then return end
 
-      synchronizer_host:override_singleplay_profile(sender_peer_id, local_player_id, profile)
-    end
+    local profile = sender_player:profile()
+    if not profile or not loadout_item_data then return end
+
+    local local_peer_id = sender_player:peer_id()
+    local new_profile = table.clone_instance(profile)
+
+    new_profile.loadout_item_data = table.clone(loadout_item_data)
+
+    synchronizer_host:override_singleplay_profile(local_peer_id, 1, new_profile)
+    --synchronizer_host:profile_changed(local_peer_id, 1)
   end)
 
-  realms.network_register(mod, "rpc_loadout_config_reset_profile", function(sender_peer_id)
-    local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
+  if not sync_registered then
+    mod:echo("[Loadout Config ERROR]: Failed to register sync RPC: " .. tostring(sync_err))
+  else
+    mod:echo("[Loadout Config]: Sync RPC registered successfully.")
+  end
 
+  -- 2. Reset Profile RPC
+  local reset_registered, reset_err = realms.network_register(mod, "rpc_loadout_config_reset_profile", function(sender_peer_id, local_player_id)
+    mod:notify("[Loadout Config]: Profile reset received from Peer: " .. tostring(sender_peer_id))
+    
+    local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
     if synchronizer_host then
-      mod:echo("[Loadout Config]: Loadout reset requested by peer_id: " .. tostring(sender_peer_id))
-      local player = Managers.player:player(sender_peer_id, 1)
-      local local_player_id = player and player:local_player_id() or 1
-
-      synchronizer_host:profile_changed(sender_peer_id, local_player_id)
+      local valid_player_id = type(local_player_id) == "number" and local_player_id or 1
+      synchronizer_host:profile_changed(sender_peer_id, valid_player_id)
+      mod:echo("[Loadout Config]: Successfully reset profile for Peer: " .. tostring(sender_peer_id))
     end
   end)
+
+  if not reset_registered then
+    mod:echo("[Loadout Config ERROR]: Failed to register reset RPC: " .. tostring(reset_err))
+  end
 end
 
 mod.on_all_mods_loaded = function()
@@ -103,8 +124,8 @@ function mod.open_view()
   local ui_manager = Managers.ui
 
   if not ui_manager:has_active_view()
-      and not ui_manager:chat_using_input()
-      and not ui_manager:view_instance(loadout_view_name)
+     and not ui_manager:chat_using_input()
+     and not ui_manager:view_instance(loadout_view_name)
   then
     local synchronizer_host = Managers.profile_synchronization:synchronizer_host()
 
@@ -122,7 +143,7 @@ end
 
 mod:command("loadout_config", "", mod.open_view)
 mod:command("lc", mod:localize("mod_name"), mod.open_view)
-mod:command("lc_test_realms_profile", "Simulate receiving a custom profile RPC from a client", function()
+mod:command("lc_test_realms_sync_profile", "Simulate receiving a custom profile RPC from a client", function()
   local player = Managers.player:local_player_safe(1)
   if not player then 
     mod:echo("[Test] Must be in a game session to test.")
@@ -137,7 +158,17 @@ mod:command("lc_test_realms_profile", "Simulate receiving a custom profile RPC f
 
   local realms = get_mod("Realms")
   if realms and realms.network_is_available() then
-    realms.network_send(mod, "rpc_loadout_config_sync_profile", "local", mock_profile)
+    realms.network_send(mod, "rpc_loadout_config_sync_profile", "host", mock_profile.loadout_item_data)
+  else
+    mod:echo("[Test] Realms network is not available right now.")
+  end
+end)
+mod:command("lc_test_realms_reset_profile", "Simulate receiving a custom profile RPC from a client", function()
+  mod:echo("[Test] Simulating Client sending RPC to Host...")
+
+  local realms = get_mod("Realms")
+  if realms and realms.network_is_available() then
+    realms.network_send(mod, "rpc_loadout_config_reset_profile", "host")
   else
     mod:echo("[Test] Realms network is not available right now.")
   end
