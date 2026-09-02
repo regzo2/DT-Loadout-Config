@@ -1,5 +1,8 @@
 local mod = get_mod("loadout_config")
 
+local MatchmakingConstants = require("scripts/settings/network/matchmaking_constants")
+local HOST_TYPES = MatchmakingConstants.HOST_TYPES
+
 mod.on_setting_changed = function()
   mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
   mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
@@ -45,11 +48,19 @@ mod:register_view({
   }
 })
 
-local function is_custom_host_session()
+local function is_player_hosted_session()
 	local multiplayer_session = Managers.multiplayer_session
 
 	return multiplayer_session
 		     and multiplayer_session:host_type() == HOST_TYPES.player
+		     or false
+end
+
+local function is_singleplayer_session()
+	local multiplayer_session = Managers.multiplayer_session
+
+	return multiplayer_session
+		     and multiplayer_session:host_type() == HOST_TYPES.singleplay
 		     or false
 end
 
@@ -60,7 +71,7 @@ function mod.open_view()
       and not ui_manager:chat_using_input()
       and not ui_manager:view_instance(loadout_view_name)
   then
-    if not is_custom_host_session() then
+    if not (is_player_hosted_session() or is_singleplayer_session()) then
       mod:notify(mod:localize("error_only_open_as_host"))
 
       return
