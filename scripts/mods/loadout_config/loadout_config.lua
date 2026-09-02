@@ -6,6 +6,7 @@ local HOST_TYPES = MatchmakingConstants.HOST_TYPES
 mod.on_setting_changed = function()
   mod._enforce_override_restrictions = mod:get("enforce_override_restrictions")
   mod._enforce_class_restrictions = mod:get("enforce_class_restrictions")
+  mod._enforce_trait_restrictions = mod:get("enforce_trait_restrictions")
   mod._is_debug_mode = mod:get("debug_mode")
   mod._allow_clients_loadout = mod:get("allow_clients_loadout")
   mod._weapon_naming_convention = mod:get("weapon_naming_convention")

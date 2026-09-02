@@ -15,12 +15,27 @@ return {
 				function_name = "open_view"
 			},
 			{
-				setting_id = "enforce_override_restrictions",
-				type = "checkbox",
-				default_value = true
+				setting_id  = "restrictions_group",
+				type        = "group",
+				sub_widgets = {
+					{
+						setting_id = "enforce_override_restrictions",
+						type = "checkbox",
+						default_value = true
+					},
+					{
+						setting_id = "enforce_class_restrictions",
+						type = "checkbox",
+						default_value = true
+					},
+					{
+						setting_id = "enforce_trait_restrictions",
+						type = "checkbox",
+						default_value = true
+					},
+				},
 			},
 			{
-				setting_id = "enforce_class_restrictions",
 				setting_id = "allow_clients_loadout",
 				type = "checkbox",
 				default_value = true

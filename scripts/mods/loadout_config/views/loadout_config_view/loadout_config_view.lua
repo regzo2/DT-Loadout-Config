@@ -293,12 +293,59 @@ function LoadoutConfigView:_on_trait_selected(widget, config)
   self._selected_trait_item = config.trait_item
 end
 
+local function get_all_unlocked_traits_dict()
+  local master_items = MasterItems.get_cached()
+  local all_traits_list = {}
+  local trait_id_to_loc_name = {}
+
+  for id, item in pairs(master_items) do
+    if item and item.item_type == "TRAIT" then
+      local trait_id = item.name
+
+      gbl_trait = item
+
+      if trait_id then
+        trait_id_to_loc_name[trait_id] = Localize(item.display_name)
+        mod:echo(trait_id_to_loc_name[trait_id])
+        all_traits_list[trait_id] = {
+          "seen",
+          "seen",
+          "seen",
+          "seen"
+        }
+      end
+    end
+  end
+
+  table.sort(all_traits_list, function(a, b)
+    local a_loc_name = trait_id_to_loc_name[a]
+    local b_loc_name = trait_id_to_loc_name[b]
+
+    return a_loc_name < b_loc_name
+  end)
+
+  return all_traits_list
+end
+
 function LoadoutConfigView:_update_trait_selection()
   if not self._trait_selection then
     return
   end
 
   local trait_category = ItemUtils.trait_category(self._selected_item)
+
+  if trait_category and not mod._enforce_trait_restrictions then
+    self._traits_list = get_all_unlocked_traits_dict()
+
+    self._trait_selection:present_inventory(self._traits_list, {
+      item = self._selected_item,
+      trait_ids = self._selected_item.traits or {}
+    }, callback(self, "_on_trait_selected"))
+
+    self._trait_selection:set_color_intensity_multiplier(1)
+    self._trait_selection:_switch_to_rank_tab(4)
+    return
+  end
 
   if not trait_category then
     local innate_trait_items = self._innate_traits_list or table.filter(MasterItems.get_cached(), function(item)
@@ -307,23 +354,17 @@ function LoadoutConfigView:_update_trait_selection()
 
     local innate_traits_list = {}
     for trait_name, trait_item in pairs(innate_trait_items) do
-      innate_traits_list[trait_name] = {
-        "seen",
-        "seen",
-        "seen",
-        "seen"
-      }
+      innate_traits_list[trait_name] = { "seen", "seen", "seen", "seen" }
     end
 
     self._trait_selection:present_inventory(innate_traits_list, {
       item = self._selected_item,
       trait_ids = self._selected_item.traits or {}
     }, callback(self, "_on_trait_selected"))
+
     self._trait_selection:set_color_intensity_multiplier(1)
     self._trait_selection:_switch_to_rank_tab(4)
-
     self._innate_traits_list = innate_traits_list
-
     return
   end
 
@@ -339,6 +380,7 @@ function LoadoutConfigView:_update_trait_selection()
       item = self._selected_item,
       trait_ids = self._selected_item.traits or {}
     }, callback(self, "_on_trait_selected"))
+
     self._trait_selection:set_color_intensity_multiplier(1)
     self._trait_selection:_switch_to_rank_tab(4)
   end)
@@ -748,7 +790,7 @@ function LoadoutConfigView:_apply_custom_loadout()
   local local_player_id = player:local_player_id()
   local peer_id = player:peer_id()
 
-    if self._reset_loadout then
+  if self._reset_loadout then
     if synchronizer_host then
       synchronizer_host:profile_changed(peer_id, local_player_id)
     elseif is_realms_client() then
@@ -758,12 +800,12 @@ function LoadoutConfigView:_apply_custom_loadout()
       end
     end
 
-      self._reset_loadout = nil
-      return
-    end
+    self._reset_loadout = nil
+    return
+  end
 
-    self:_pack_loadout_to_profile()
-    local profile = self._profile
+  self:_pack_loadout_to_profile()
+  local profile = self._profile
 
   if synchronizer_host then
     synchronizer_host:override_singleplay_profile(peer_id, local_player_id, profile)

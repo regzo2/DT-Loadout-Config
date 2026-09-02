@@ -42,6 +42,16 @@ return {
 		ru = "Запрещает классам доступ к оружию из списка, которое они обычно не могут использовать." ..
 			 "\n\n[ПРИМЕЧАНИЕ] \nОружие огринов всё равно будет отключено для человеческих классов во избежание сбоев.",
 	},
+	enforce_trait_restrictions = {
+		en = "Enforce Blessing Restrictions",
+		["zh-cn"] = "遵循祝福限制",
+		ru = "Учитывать ограничения благословений",
+	},
+	enforce_trait_restrictions_description = {
+		en = "Prevents weapons from having access to inaccessible Blessings.",
+		["zh-cn"] = "阻止武器使用不兼容的祝福。",
+		ru = "Скрывает или запрещает благословения, несовместимые с выбранным оружием.",
+	},
 	allow_clients_loadout = {
 		en = "Allow Client Loadouts",
 		["zh-cn"] = "允许客户端配装",
