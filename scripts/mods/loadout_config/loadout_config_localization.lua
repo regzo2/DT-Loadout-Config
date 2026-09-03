@@ -143,15 +143,18 @@ return {
 
 	create_button_text = {
 		en = "Create",
+		["zh-cn"] = "创建",
 		ru = "Создать",
 	},
 
 	reset_button_text = {
 		en = "Reset", 
+		["zh-cn"] = "重置",
 		ru = "Сбросить",
 	},
 	delete_button_text = {
 		en = "Delete",
+		["zh-cn"] = "删除",
 		ru = "Удалить",
 	},
 	
